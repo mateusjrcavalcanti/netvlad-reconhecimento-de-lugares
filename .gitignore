@@ -1,2 +1,30 @@
-api/database.db
-env
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# Local app state
+data/database.db
+data/uploads/
+data/netvlad_checkpoint.pt
+uploads/
+
+# Environment files
+.env
+.env.*
+
+# Tooling/cache
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+
+# OS/editor files
+.DS_Store
+.vscode/
+.idea/
