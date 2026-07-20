@@ -12,39 +12,83 @@ import datasets  # noqa: E402
 
 
 class DatasetSummaryTest(unittest.TestCase):
-    def test_dataset_summary_counts_available_and_missing_images(self):
-        original_dataset_dir = config.DATASET_DIR
-        original_csv_path = config.CSV_PATH
-        original_module_dataset_dir = datasets.DATASET_DIR
-        original_module_csv_path = datasets.CSV_PATH
+    def test_directory_dataset_summary_counts_classes_and_images(self):
+        original_datasets_dir = config.DATASETS_DIR
+        original_module_datasets_dir = datasets.DATASETS_DIR
 
         try:
             with tempfile.TemporaryDirectory() as temporary_dir:
-                dataset_dir = Path(temporary_dir)
-                csv_path = dataset_dir / "labeled_dataset.csv"
-                csv_path.write_text(
-                    "frame00001.png;bancadas_a;\nframe00006.png;bancadas_a;\n",
-                    encoding="utf-8",
-                )
-                (dataset_dir / "frame00001.png").touch()
+                datasets_dir = Path(temporary_dir)
+                class_dir = datasets_dir / "laboratorio" / "porta"
+                class_dir.mkdir(parents=True)
+                (class_dir / "frame00001.png").touch()
+                (class_dir / "notes.txt").touch()
 
-                config.DATASET_DIR = dataset_dir
-                config.CSV_PATH = csv_path
-                datasets.DATASET_DIR = config.DATASET_DIR
-                datasets.CSV_PATH = config.CSV_PATH
+                config.DATASETS_DIR = datasets_dir
+                datasets.DATASETS_DIR = config.DATASETS_DIR
 
-                summary = datasets.dataset_summary()
+                summary = datasets.dataset_summary("laboratorio")
         finally:
-            config.DATASET_DIR = original_dataset_dir
-            config.CSV_PATH = original_csv_path
-            datasets.DATASET_DIR = original_module_dataset_dir
-            datasets.CSV_PATH = original_module_csv_path
+            config.DATASETS_DIR = original_datasets_dir
+            datasets.DATASETS_DIR = original_module_datasets_dir
 
-        self.assertEqual(summary["csv_rows"], 2)
         self.assertEqual(summary["available_images"], 1)
-        self.assertEqual(summary["missing_images"], 1)
         self.assertEqual(summary["classes"], 1)
-        self.assertEqual(summary["missing_filenames"], ["frame00006.png"])
+
+    def test_list_dataset_names_returns_directory_datasets(self):
+        original_datasets_dir = config.DATASETS_DIR
+        original_module_datasets_dir = datasets.DATASETS_DIR
+
+        try:
+            with tempfile.TemporaryDirectory() as temporary_dir:
+                datasets_dir = Path(temporary_dir)
+                (datasets_dir / "laboratorio").mkdir()
+                (datasets_dir / "externo").mkdir()
+                (datasets_dir / "notes.txt").touch()
+
+                config.DATASETS_DIR = datasets_dir
+                datasets.DATASETS_DIR = config.DATASETS_DIR
+
+                names = datasets.list_dataset_names()
+        finally:
+            config.DATASETS_DIR = original_datasets_dir
+            datasets.DATASETS_DIR = original_module_datasets_dir
+
+        self.assertEqual(names, ["externo", "laboratorio"])
+
+    def test_delete_image_and_class_updates_dataset(self):
+        original_datasets_dir = config.DATASETS_DIR
+        original_module_datasets_dir = datasets.DATASETS_DIR
+
+        try:
+            with tempfile.TemporaryDirectory() as temporary_dir:
+                datasets_dir = Path(temporary_dir)
+                class_dir = datasets_dir / "laboratorio" / "porta"
+                class_dir.mkdir(parents=True)
+                (class_dir / "frame00001.png").touch()
+
+                config.DATASETS_DIR = datasets_dir
+                datasets.DATASETS_DIR = config.DATASETS_DIR
+
+                image_message = datasets.delete_image("laboratorio", "porta", "frame00001.png")
+                class_message = datasets.delete_class("laboratorio", "porta")
+        finally:
+            config.DATASETS_DIR = original_datasets_dir
+            datasets.DATASETS_DIR = original_module_datasets_dir
+
+        self.assertIn("removida", image_message)
+        self.assertIn("removida", class_message)
+
+    def test_parse_video_intervals_validates_rows(self):
+        intervals = datasets.parse_video_intervals([[0, 2.5, "porta"], [3, 4, "corredor"]])
+
+        self.assertEqual(
+            intervals,
+            [
+                {"start": 0.0, "end": 2.5, "class": "porta"},
+                {"start": 3.0, "end": 4.0, "class": "corredor"},
+            ],
+        )
 
 
 if __name__ == "__main__":

@@ -2,6 +2,7 @@ torch==2.5.1
 torchvision==0.20.1
 pillow==10.2.0
 numpy==1.26.4
+opencv-python-headless==4.10.0.84
 pandas==2.2.0
 scikit-learn==1.4.0
 gradio==5.38.2

@@ -1,5 +1,6 @@
 CREATE TABLE IF NOT EXISTS descriptors (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     class TEXT NOT NULL,
+    image_path TEXT NOT NULL DEFAULT '',
     descriptor BLOB NOT NULL
 );

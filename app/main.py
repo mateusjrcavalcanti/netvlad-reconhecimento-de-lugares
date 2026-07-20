@@ -1,6 +1,5 @@
 import socket
 
-from database import init_db
 from ui import build_interface
 
 
@@ -13,7 +12,6 @@ def find_free_port(start_port=3000, attempts=20):
     raise RuntimeError(f"No free port found from {start_port} to {start_port + attempts - 1}.")
 
 
-init_db()
 demo = build_interface()
 
 

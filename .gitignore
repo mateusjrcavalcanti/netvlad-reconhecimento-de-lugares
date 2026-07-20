@@ -9,7 +9,8 @@ venv/
 env/
 
 # Local app state
-data/database.db
+data/*.db
+data/descriptors/
 data/uploads/
 data/netvlad_checkpoint.pt
 uploads/

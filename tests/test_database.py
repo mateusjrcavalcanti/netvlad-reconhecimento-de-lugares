@@ -24,31 +24,37 @@ class DescriptorDatabaseTest(unittest.TestCase):
 
     def test_save_and_fetch_descriptor_from_sqlite(self):
         original_data_dir = config.DATA_DIR
-        original_database_path = config.DATABASE_PATH
+        original_descriptors_dir = config.DESCRIPTORS_DIR
         original_module_data_dir = database.DATA_DIR
-        original_module_database_path = database.DATABASE_PATH
+        original_module_descriptors_dir = database.DESCRIPTORS_DIR
 
         try:
             with tempfile.TemporaryDirectory() as temporary_dir:
                 temporary_path = Path(temporary_dir)
                 config.DATA_DIR = temporary_path
-                config.DATABASE_PATH = temporary_path / "database.db"
+                config.DESCRIPTORS_DIR = temporary_path / "descriptors"
                 database.DATA_DIR = config.DATA_DIR
-                database.DATABASE_PATH = config.DATABASE_PATH
+                database.DESCRIPTORS_DIR = config.DESCRIPTORS_DIR
 
                 descriptor = np.array([[4.0, 5.0]], dtype=np.float32)
-                database.init_db()
-                database.save_image_descriptor("porta", descriptor)
-                rows = database.fetch_all_descriptors()
+                database.init_db("laboratorio")
+                database.save_image_descriptor(
+                    "porta",
+                    descriptor,
+                    "datasets/laboratorio/porta/frame00001.png",
+                    "laboratorio",
+                )
+                rows = database.fetch_all_descriptors("laboratorio")
         finally:
             config.DATA_DIR = original_data_dir
-            config.DATABASE_PATH = original_database_path
+            config.DESCRIPTORS_DIR = original_descriptors_dir
             database.DATA_DIR = original_module_data_dir
-            database.DATABASE_PATH = original_module_database_path
+            database.DESCRIPTORS_DIR = original_module_descriptors_dir
 
         self.assertEqual(len(rows), 1)
         self.assertEqual(rows[0][1], "porta")
-        np.testing.assert_array_equal(rows[0][2], descriptor)
+        self.assertEqual(rows[0][2], "datasets/laboratorio/porta/frame00001.png")
+        np.testing.assert_array_equal(rows[0][3], descriptor)
 
 
 if __name__ == "__main__":
